@@ -8,15 +8,20 @@
 
 config_version=4
 
-_global_script_classes=[  ]
+_global_script_classes=[ {
+"base": "Reference",
+"class": "Map",
+"language": "GDScript",
+"path": "res://map.gd"
+} ]
 _global_script_class_icons={
-
+"Map": ""
 }
 
 [application]
 
 config/name="Tanks"
-run/main_scene="res://Level.tscn"
+run/main_scene="res://Menu.tscn"
 config/icon="res://icon.png"
 
 [rendering]

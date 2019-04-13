@@ -1,0 +1,10 @@
+tanks Map Specification
+
+Byte 1- X dimension of map (integer, unsigned)
+Byte 2- Y dimension of map (integer, unsigned)
+Byte 3 to X*Y+2- grid elements as below:
+	One grid element is one byte. First 2 bits are the orientation of
+	the element. Final 6 bits are the tile type as below:
+
+	0 bumpy1
+	1 track
