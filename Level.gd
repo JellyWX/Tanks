@@ -1,33 +1,21 @@
 extends Spatial
 
 var Map = load("res://map.gd")
+var map_path: String
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var map: Map = Map.new()
-	map.load_from_file("res://maps/map1.tanks")
+	var error = map.load_from_file(map_path)
 	
-	print_debug(map.dimensions)
-	print_debug(map.grid)
+	if error != Map.ReadMap.OK:
+		print_debug("Error occured loading map")
+		var menu = preload("res://LevelError.tscn").instance()
+		add_child(menu)
 	
-	var ground_gridmap: Node = get_node("GroundTiles")
-	
-	var row: int = 0
-	var col: int = 0
-	var element: int = 0
-	var orientation: int = 0
-	var ge
-	
-	for index in range(map.grid.size()):
-		row = index / map.dimensions.x
-		col = index % map.dimensions.x
+	else:
+		var ground_gridmap: Node = get_node("GroundTiles")
+		map.draw_to_gridmap(ground_gridmap)
 		
-		ge = map.grid[index]
-		
-		ground_gridmap.set_cell_item(row, 0, col, ge.type, ge.orientation)
-		
-	var camera: Node = get_node("CenterCamera")
-	
-	camera.translate_object_local(Vector3(map.dimensions.y * 4, 75, (map.dimensions.x + 7) * 4))
-	camera.rotate_object_local(Vector3(1, 0, 0), -PI * 0.42)
-	
+		var camera: Node = get_node("CenterCamera")
+		map.position_camera(camera)
