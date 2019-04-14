@@ -6,7 +6,7 @@ func _ready():
     var container: Node = get_node("Container")
     
     for map in maps:
-        var button: Node = preload("res://LoadLevel.tscn").instance()
+        var button: Node = preload("res://interfaces/LoadLevel.tscn").instance()
         button.text = map
         button.map_path = "res://maps/%s" % map
         print_debug(button.map_path)

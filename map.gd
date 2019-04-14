@@ -71,7 +71,7 @@ func load_from_file(filepath: String):
             return ReadMap.OK
 
 
-func draw_to_gridmap(gridmap: Node):
+func draw_to_gridmap(gridmap_a: Node, gridmap_b: Node):
     
     var row: int = 0
     var col: int = 0
@@ -85,7 +85,10 @@ func draw_to_gridmap(gridmap: Node):
         
         ge = self.grid[index]
         
-        gridmap.set_cell_item(col, 0, row, ge.type, ge.orientation)
+        gridmap_a.set_cell_item(col, 0, row, ge.type, ge.orientation)
+        
+        if ge.obstacle >> 1 > 0:
+            gridmap_b.set_cell_item(col, 0, row, ge.obstacle - 3, ge.obstacle_orientation)
 
 
 func position_camera(camera: Node):
