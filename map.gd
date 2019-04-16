@@ -27,10 +27,10 @@ class GridElement:
         var quaternion = Quat(Vector3(0, 1, 0), PI * 0.5 * (bytes_type >> 6))
         self.orientation = Basis(quaternion).get_orthogonal_index()
 
-        if self.obstacle == 1:
-            spawn = true
+        if bytes_obstacle == 1:
+            self.spawn = true
 
-        self.obstacle = bytes_obstacle & 0x3f >> 1 # shift to remove the trailing 0 (spawn bit)
+        self.obstacle = bytes_obstacle & 0x3f >> 1 # shift to remove the trailing 0 (spawn bit) and add 1
         
         quaternion = Quat(Vector3(0, 1, 0), PI * 0.5 * (bytes_obstacle >> 6))
         self.obstacle_orientation = Basis(quaternion).get_orthogonal_index()
@@ -101,8 +101,10 @@ func draw_to_gridmap(gridmap_a: Node, gridmap_b: Node):
         gridmap_a.set_cell_item(col, 0, row, ge.type, ge.orientation)
         
         if ge.obstacle > 0:
-            gridmap_b.set_cell_item(col, 0, row, ge.obstacle, ge.obstacle_orientation)
-
+            gridmap_b.set_cell_item(col, 0, row, ge.obstacle - 1, ge.obstacle_orientation)
+        elif ge.spawn:
+            gridmap_b.set_cell_item(col, 0, row, 0, 0)
+            
 
 func position_camera(camera: Node):
     camera.translate_object_local(Vector3(self.dimensions.x * TILE_WIDTH * 0.5, 75, (self.dimensions.y + 7) * TILE_WIDTH * 0.5))
