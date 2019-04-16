@@ -30,3 +30,12 @@ func list_directory(path):
     dir.list_dir_end()
     
     return files
+    
+func grab_map():
+    var input: Node = get_node("URLInput")
+    var url: String = input.text
+    
+    get_node("HTTPRequest").request(url)
+
+func _on_HTTPRequest_request_completed(result, response_code, headers, body):
+    pass

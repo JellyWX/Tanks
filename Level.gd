@@ -27,3 +27,7 @@ func set_map():
         
         var camera: Node = get_node("CenterCamera")
         map.position_camera(camera)
+        
+func _physics_process(tdelta: float):
+    pass
+    

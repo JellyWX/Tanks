@@ -1,4 +1,4 @@
-enum ReadMap {ERR_WRONG_SIZE, ERR_FILE, OK}
+enum ReadMap {ERR_WRONG_SIZE, ERR_FILE, ERR_WRONG_SPAWNS, OK}
 
 const TILE_WIDTH: int = 8
 
@@ -19,6 +19,7 @@ class GridElement:
     var orientation: int
     var obstacle: int
     var obstacle_orientation: int
+    var spawn: bool = false
     
     func _init(bytes_type: int, bytes_obstacle: int):
         self.type = bytes_type & 0x3f # bytes & 0b00111111
@@ -26,7 +27,10 @@ class GridElement:
         var quaternion = Quat(Vector3(0, 1, 0), PI * 0.5 * (bytes_type >> 6))
         self.orientation = Basis(quaternion).get_orthogonal_index()
 
-        self.obstacle = bytes_obstacle & 0x3f
+        if self.obstacle == 1:
+            spawn = true
+
+        self.obstacle = bytes_obstacle & 0x3f >> 1 # shift to remove the trailing 0 (spawn bit)
         
         quaternion = Quat(Vector3(0, 1, 0), PI * 0.5 * (bytes_obstacle >> 6))
         self.obstacle_orientation = Basis(quaternion).get_orthogonal_index()
@@ -41,6 +45,8 @@ func _init():
     pass
 
 func load_from_file(filepath: String):
+    var spawn_count: int = 0
+    
     var level_map: File = File.new()
     var error = level_map.open(filepath, File.READ)
     
@@ -56,6 +62,10 @@ func load_from_file(filepath: String):
         
         while not level_map.eof_reached():
             var ge = GridElement.new(next_byte_tile, next_byte_object)
+            
+            if ge.spawn:
+                spawn_count += 1
+            
             grid.append(ge)
             next_byte_tile = level_map.get_8()
             next_byte_object = level_map.get_8()
@@ -64,6 +74,9 @@ func load_from_file(filepath: String):
         
         if len(grid) != dimensions.size():
             return ReadMap.ERR_WRONG_SIZE
+        
+        elif spawn_count != 4:
+            return ReadMap.ERR_WRONG_SPAWNS
         
         else:
             self.dimensions = dimensions
@@ -77,7 +90,7 @@ func draw_to_gridmap(gridmap_a: Node, gridmap_b: Node):
     var col: int = 0
     var element: int = 0
     var orientation: int = 0
-    var ge
+    var ge: GridElement
     
     for index in range(self.grid.size()):
         row = index / self.dimensions.x
@@ -87,10 +100,14 @@ func draw_to_gridmap(gridmap_a: Node, gridmap_b: Node):
         
         gridmap_a.set_cell_item(col, 0, row, ge.type, ge.orientation)
         
-        if ge.obstacle >> 1 > 0:
-            gridmap_b.set_cell_item(col, 0, row, ge.obstacle - 3, ge.obstacle_orientation)
+        if ge.obstacle > 0:
+            gridmap_b.set_cell_item(col, 0, row, ge.obstacle, ge.obstacle_orientation)
 
 
 func position_camera(camera: Node):
     camera.translate_object_local(Vector3(self.dimensions.x * TILE_WIDTH * 0.5, 75, (self.dimensions.y + 7) * TILE_WIDTH * 0.5))
     camera.rotate_object_local(Vector3(1, 0, 0), -PI * 0.42)
+
+
+func place_tanks():
+    pass
