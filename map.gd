@@ -25,7 +25,10 @@ class GridElement:
     var spawn: bool = false
     var has_obstacle: bool = false
     
-    func _init(bytes_type: int, bytes_obstacle: int, ground_meshlib: MeshLibrary, obstacle_meshlib: MeshLibrary):
+    var position: Vector2
+    
+    func _init(bytes_type: int, bytes_obstacle: int, ground_meshlib: MeshLibrary, obstacle_meshlib: MeshLibrary, position: Vector2):
+        self.position = position
         self.type = ground_meshlib.find_item_by_name(TILE_NAMES[bytes_type & 0x3f])
         
         var quaternion = Quat(Vector3(0, 1, 0), PI * 0.5 * (bytes_type >> 6))
@@ -69,9 +72,11 @@ func load_from_file(filepath: String, ground_meshlib: MeshLibrary, obstacle_mesh
         
         var next_byte_tile: int = level_map.get_8()
         var next_byte_object: int = level_map.get_8()
+        var index: int = 0
         
         while not level_map.eof_reached():
-            var ge = GridElement.new(next_byte_tile, next_byte_object, ground_meshlib, obstacle_meshlib)
+            var position: Vector2 = Vector2(index % dimensions.x, index / dimensions.x)
+            var ge = GridElement.new(next_byte_tile, next_byte_object, ground_meshlib, obstacle_meshlib, position)
             
             if ge.spawn:
                 spawn_count += 1
@@ -79,6 +84,8 @@ func load_from_file(filepath: String, ground_meshlib: MeshLibrary, obstacle_mesh
             grid.append(ge)
             next_byte_tile = level_map.get_8()
             next_byte_object = level_map.get_8()
+        
+            index += 1
         
         level_map.close()
         
@@ -111,13 +118,19 @@ func draw_to_gridmap(gridmap_a: Node, gridmap_b: Node):
         gridmap_a.set_cell_item(col, 0, row, ge.type, ge.orientation)
         
         if ge.has_obstacle:
-            print(ge.obstacle)
+            print(ge.position)
             gridmap_b.set_cell_item(col, 0, row, ge.obstacle, ge.obstacle_orientation)    
 
 func position_camera(camera: Node):
     camera.translate_object_local(Vector3(self.dimensions.x * TILE_WIDTH * 0.5, 75, (self.dimensions.y + 7) * TILE_WIDTH * 0.5))
     camera.rotate_object_local(Vector3(1, 0, 0), -PI * 0.42)
 
-
-func place_tanks():
-    pass
+func place_tanks(root: Node):
+    
+    for element in self.grid:
+        if element.spawn:
+            var tank: Node = preload("res://Tank.tscn").instance()
+            
+            tank.translation = Vector3((element.position.x + 0.5) * TILE_WIDTH, 20, (element.position.y + 0.5) * TILE_WIDTH)
+            
+            root.add_child(tank)
