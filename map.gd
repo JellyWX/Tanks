@@ -1,5 +1,8 @@
 enum ReadMap {ERR_WRONG_SIZE, ERR_FILE, ERR_WRONG_SPAWNS, OK}
 
+const OBSTACLE_NAMES: Array = ["start", "rock1"]
+const TILE_NAMES: Array = ["wall", "bumpy1", "track"]
+
 const TILE_WIDTH: int = 8
 
 class Dimensions:
@@ -20,18 +23,25 @@ class GridElement:
     var obstacle: int
     var obstacle_orientation: int
     var spawn: bool = false
+    var has_obstacle: bool = false
     
-    func _init(bytes_type: int, bytes_obstacle: int):
-        self.type = bytes_type & 0x3f # bytes & 0b00111111
+    func _init(bytes_type: int, bytes_obstacle: int, ground_meshlib: MeshLibrary, obstacle_meshlib: MeshLibrary):
+        self.type = ground_meshlib.find_item_by_name(TILE_NAMES[bytes_type & 0x3f])
         
         var quaternion = Quat(Vector3(0, 1, 0), PI * 0.5 * (bytes_type >> 6))
         self.orientation = Basis(quaternion).get_orthogonal_index()
 
+        self.obstacle = bytes_obstacle & 0x3f >> 1 # shift to remove the trailing 0 (spawn bit) and add 1
+
         if bytes_obstacle == 1:
             self.spawn = true
-
-        self.obstacle = bytes_obstacle & 0x3f >> 1 # shift to remove the trailing 0 (spawn bit) and add 1
+            self.has_obstacle = true
+            self.obstacle = obstacle_meshlib.find_item_by_name("start")
         
+        elif self.obstacle != 0:
+            self.has_obstacle = true
+            self.obstacle = obstacle_meshlib.find_item_by_name(OBSTACLE_NAMES[self.obstacle - 1])
+
         quaternion = Quat(Vector3(0, 1, 0), PI * 0.5 * (bytes_obstacle >> 6))
         self.obstacle_orientation = Basis(quaternion).get_orthogonal_index()
 
@@ -44,7 +54,7 @@ var dimensions: Dimensions
 func _init():
     pass
 
-func load_from_file(filepath: String):
+func load_from_file(filepath: String, ground_meshlib: MeshLibrary, obstacle_meshlib: MeshLibrary):
     var spawn_count: int = 0
     
     var level_map: File = File.new()
@@ -61,7 +71,7 @@ func load_from_file(filepath: String):
         var next_byte_object: int = level_map.get_8()
         
         while not level_map.eof_reached():
-            var ge = GridElement.new(next_byte_tile, next_byte_object)
+            var ge = GridElement.new(next_byte_tile, next_byte_object, ground_meshlib, obstacle_meshlib)
             
             if ge.spawn:
                 spawn_count += 1
@@ -100,11 +110,9 @@ func draw_to_gridmap(gridmap_a: Node, gridmap_b: Node):
         
         gridmap_a.set_cell_item(col, 0, row, ge.type, ge.orientation)
         
-        if ge.obstacle > 0:
-            gridmap_b.set_cell_item(col, 0, row, ge.obstacle - 1, ge.obstacle_orientation)
-        elif ge.spawn:
-            gridmap_b.set_cell_item(col, 0, row, 0, 0)
-            
+        if ge.has_obstacle:
+            print(ge.obstacle)
+            gridmap_b.set_cell_item(col, 0, row, ge.obstacle, ge.obstacle_orientation)    
 
 func position_camera(camera: Node):
     camera.translate_object_local(Vector3(self.dimensions.x * TILE_WIDTH * 0.5, 75, (self.dimensions.y + 7) * TILE_WIDTH * 0.5))
