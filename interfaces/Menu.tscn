@@ -1,9 +1,8 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=2 format=2]
 
 [ext_resource path="res://interfaces/Menu.gd" type="Script" id=1]
-[ext_resource path="res://interfaces/HTTPGet.gd" type="Script" id=2]
 
-[node name="Menu" type="Node2D"]
+[node name="Menu" type="Control"]
 script = ExtResource( 1 )
 
 [node name="ColorRect" type="ColorRect" parent="."]
@@ -21,28 +20,13 @@ margin_bottom = 14.0
 text = "Select a level:"
 align = 1
 
-[node name="HTTPRequest" type="HTTPRequest" parent="."]
-
-[node name="URLInput" type="LineEdit" parent="."]
-margin_left = 1.0
-margin_top = 463.582
-margin_right = 1024.0
-margin_bottom = 487.582
-
-[node name="HTTPGet" type="MenuButton" parent="."]
-margin_left = 1.29236
-margin_top = 492.294
-margin_right = 1023.29
-margin_bottom = 512.294
-text = "Get map from HTTP"
-flat = false
-script = ExtResource( 2 )
-
 [node name="IPInput" type="LineEdit" parent="."]
 margin_left = 3.0
 margin_top = 547.585
 margin_right = 1021.0
 margin_bottom = 571.585
+caret_blink = true
+caret_blink_speed = 0.5
 
 [node name="JoinGame" type="MenuButton" parent="."]
 margin_left = 4.29236
@@ -52,4 +36,3 @@ margin_bottom = 595.432
 text = "Join Game by IP"
 flat = false
 
-[connection signal="request_completed" from="HTTPRequest" to="." method="_on_HTTPRequest_request_completed"]

@@ -1,4 +1,6 @@
-extends Node2D
+extends Control
+
+var public: bool = false
 
 func _ready():
     $JoinGame.connect("pressed", self, "join_game")
@@ -13,6 +15,15 @@ func _ready():
         button.map_path = "res://maps/%s" % map
         print_debug(button.map_path)
         container.add_child(button)
+
+
+func update_network_status():
+    var label = Label.new()
+    if public:
+        label.text = "Public hosting available"
+    else:
+        label.text = "Public hosting limited or unavailable. Check router settings (or join a friend)"
+    get_node("Container").add_child(label)
 
 
 func list_directory(path):
@@ -45,4 +56,6 @@ func join_game():
     level.remove_child(level.get_node("Menu"))
     level.map_path = "res://map2.tanks"
     
-    level.set_map(false, get_node("IPInput").text)
+    get_tree().set_network_peer(null)
+    level.start_networking(false, get_node("IPInput").text)
+    

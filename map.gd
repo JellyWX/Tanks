@@ -121,16 +121,39 @@ func draw_to_gridmap(gridmap_a: Node, gridmap_b: Node):
             print(ge.position)
             gridmap_b.set_cell_item(col, 0, row, ge.obstacle, ge.obstacle_orientation)    
 
+
 func position_camera(camera: Node):
     camera.translate_object_local(Vector3(self.dimensions.x * TILE_WIDTH * 0.5, 75, (self.dimensions.y + 7) * TILE_WIDTH * 0.5))
     camera.rotate_object_local(Vector3(1, 0, 0), -PI * 0.42)
 
-func place_tanks(root: Node):
+
+func reset(gridmap_a: Node, gridmap_b: Node):
+    var row: int
+    var col: int
+    
+    for index in range(self.grid.size()):
+        row = index / self.dimensions.x
+        col = index % self.dimensions.x
+        
+        gridmap_a.set_cell_item(col, 0, row, 0)
+        gridmap_b.set_cell_item(col, 0, row, -1)
+
+
+func place_tanks(root: Node, total_players: int):
+    var spawn_id: int = root.get_tree().get_network_unique_id() - 1
+    var spawn_number: int = 0
     
     for element in self.grid:
         if element.spawn:
             var tank: Node = preload("res://Tank.tscn").instance()
             
+            if spawn_number == spawn_id:
+                tank.locally_controlled = true
+            
             tank.translation = Vector3((element.position.x + 0.5) * TILE_WIDTH, 20, (element.position.y + 0.5) * TILE_WIDTH)
             
             root.add_child(tank)
+            spawn_number += 1
+            
+            if spawn_number == total_players:
+                break

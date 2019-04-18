@@ -10,8 +10,10 @@ func _init(scene: Node):
     
     self.tree = scene.get_tree()
     
-func start_server():
+func start_server() -> bool:
+    var public: bool = true
     var upnp = UPNP.new()
+    
     upnp.discover()
     var num_devices = upnp.get_device_count()
     for i in range(num_devices):
@@ -30,13 +32,19 @@ func start_server():
         print('res_tcp:', res_tcp)
     else:
         print('no valid gateway')
+        public = false
     
     self.enet.create_server(HOST_PORT, 4)
     
     self.tree.set_network_peer(self.enet)
     
+    return public
+    
 func start_client(ip: String):
     self.enet.create_client(ip, HOST_PORT)
     
     self.tree.set_network_peer(self.enet)
+    
+func start_match():
+    pass
     
