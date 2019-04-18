@@ -3,7 +3,7 @@ extends Control
 var public: bool = false
 
 func _ready():
-    $JoinGame.connect("pressed", self, "join_game")
+    var _err = get_node("JoinGame").connect("pressed", self, "join_game")
     
     var maps: Array = list_directory("res://maps/")
     
@@ -18,12 +18,11 @@ func _ready():
 
 
 func update_network_status():
-    var label = Label.new()
+    var label = get_node("ConnectionError")
     if public:
-        label.text = "Public hosting available"
+        label.text = "Public hosting via UPnP available"
     else:
-        label.text = "Public hosting limited or unavailable. Check router settings (or join a friend)"
-    get_node("Container").add_child(label)
+        label.text = "Public hosting limited or unavailable (UPnP not available). Check your router settings (or join a friend)"
 
 
 func list_directory(path):
@@ -43,19 +42,17 @@ func list_directory(path):
     dir.list_dir_end()
     
     return files
-    
-func grab_map():
-    var input: Node = get_node("URLInput")
-    var url: String = input.text
-    
-    get_node("HTTPRequest").request(url)
+
 
 func join_game():
-    var level = get_tree().get_root().get_node("Level")
-    
-    level.remove_child(level.get_node("Menu"))
-    level.map_path = "res://map2.tanks"
+    var level: Node = get_tree().get_root().get_node("Level")
     
     get_tree().set_network_peer(null)
-    level.start_networking(false, get_node("IPInput").text)
+    var success: bool = level.start_networking(false, get_node("IPInput").text)
+    
+    if not success:
+        get_node("IPInput").text = ""
+        get_node("ConnectionError").text = "Failed to connect to IP"
+    else:
+        get_node("ConnectionError").text = "Connected!"
     

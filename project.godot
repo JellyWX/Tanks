@@ -30,6 +30,17 @@ config/name="Tanks"
 run/main_scene="res://Level.tscn"
 config/icon="res://icon.png"
 
+[debug]
+
+gdscript/warnings/integer_division=false
+
+[display]
+
+window/size/width=1920
+window/size/height=1080
+window/stretch/mode="viewport"
+window/stretch/aspect="keep"
+
 [input]
 
 LOCAL_LEFT={

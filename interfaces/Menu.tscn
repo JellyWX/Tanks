@@ -6,13 +6,17 @@
 script = ExtResource( 1 )
 
 [node name="ColorRect" type="ColorRect" parent="."]
-margin_right = 1025.0
-margin_bottom = 602.0
+margin_left = 465.899
+margin_top = 237.609
+margin_right = 1490.9
+margin_bottom = 839.609
 color = Color( 0.2, 0.2, 0.2, 1 )
 
 [node name="Container" type="VBoxContainer" parent="."]
-margin_right = 1022.0
-margin_bottom = 600.0
+margin_left = 465.899
+margin_top = 237.609
+margin_right = 1487.9
+margin_bottom = 837.609
 
 [node name="SelectText" type="Label" parent="Container"]
 margin_right = 1022.0
@@ -20,19 +24,26 @@ margin_bottom = 14.0
 text = "Select a level:"
 align = 1
 
+[node name="ConnectionError" type="Label" parent="."]
+margin_left = 466.899
+margin_top = 766.609
+margin_right = 1484.9
+margin_bottom = 780.609
+align = 1
+
 [node name="IPInput" type="LineEdit" parent="."]
-margin_left = 3.0
-margin_top = 547.585
-margin_right = 1021.0
-margin_bottom = 571.585
+margin_left = 468.899
+margin_top = 785.194
+margin_right = 1486.9
+margin_bottom = 809.194
 caret_blink = true
 caret_blink_speed = 0.5
 
 [node name="JoinGame" type="MenuButton" parent="."]
-margin_left = 4.29236
-margin_top = 575.432
-margin_right = 1022.29
-margin_bottom = 595.432
+margin_left = 470.192
+margin_top = 813.041
+margin_right = 1488.19
+margin_bottom = 833.041
 text = "Join Game by IP"
 flat = false
 

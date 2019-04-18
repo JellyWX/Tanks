@@ -105,8 +105,6 @@ func draw_to_gridmap(gridmap_a: Node, gridmap_b: Node):
     
     var row: int = 0
     var col: int = 0
-    var element: int = 0
-    var orientation: int = 0
     var ge: GridElement
     
     for index in range(self.grid.size()):
@@ -118,7 +116,6 @@ func draw_to_gridmap(gridmap_a: Node, gridmap_b: Node):
         gridmap_a.set_cell_item(col, 0, row, ge.type, ge.orientation)
         
         if ge.has_obstacle:
-            print(ge.position)
             gridmap_b.set_cell_item(col, 0, row, ge.obstacle, ge.obstacle_orientation)    
 
 

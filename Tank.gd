@@ -22,7 +22,7 @@ func _process(tdelta: float):
             else:
                 movement.x = 0
     
-        move_and_slide(tdelta * SPEED * movement.rotated(self.rotation.normalized(), self.rotation.length()), Vector3(0, 1, 0))
+        var _collision = move_and_slide(tdelta * SPEED * movement.rotated(self.rotation.normalized(), self.rotation.length()), Vector3(0, 1, 0))
     
         if Input.is_action_pressed("LOCAL_LEFT"):
             rotate_tank(tdelta, 1)
