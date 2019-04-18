@@ -8,4 +8,4 @@ func _pressed():
     level.remove_child(level.get_node("Menu"))
     level.map_path = map_path
     
-    level.set_map()
+    level.set_map(true)

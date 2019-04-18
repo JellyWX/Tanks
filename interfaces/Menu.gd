@@ -1,6 +1,8 @@
 extends Node2D
 
 func _ready():
+    $JoinGame.connect("pressed", self, "join_game")
+    
     var maps: Array = list_directory("res://maps/")
     
     var container: Node = get_node("Container")
@@ -37,5 +39,10 @@ func grab_map():
     
     get_node("HTTPRequest").request(url)
 
-func _on_HTTPRequest_request_completed(result, response_code, headers, body):
-    pass
+func join_game():
+    var level = get_tree().get_root().get_node("Level")
+    
+    level.remove_child(level.get_node("Menu"))
+    level.map_path = "res://map2.tanks"
+    
+    level.set_map(false, get_node("IPInput").text)
