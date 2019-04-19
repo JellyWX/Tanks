@@ -71,7 +71,6 @@ LOCAL_BACKWARD={
 [rendering]
 
 quality/driver/fallback_to_gles2=true
-threads/thread_model=2
 vram_compression/import_etc=true
 vram_compression/import_etc2=false
 quality/shadows/filter_mode=2

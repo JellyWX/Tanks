@@ -94,13 +94,13 @@ remote func place_tanks(order: int):
     self.map.place_tanks(self, order)
 
 
-remote func set_position(id: int, v: Vector2, r: float):
-    if id == get_tree().get_rpc_sender_id():
-        var tank: Spatial = self.map.tanks[id]
-        
-        tank.translation.x = v.x
-        tank.translation.z = v.y
-        tank.set_rotation(Vector3(0, r, 0))
+remote func set_position(v: Vector2, r: float):
+    var tank: Spatial = self.map.tanks[get_tree().get_rpc_sender_id()]
+    
+    tank.translation.x = v.x
+    tank.translation.z = v.y
+    tank.set_rotation(Vector3(0, r, 0))
+
 
 func update_position(tank: Node):
-    rpc_unreliable("set_position", get_tree().get_network_unique_id(), Vector2(tank.translation.x, tank.translation.z), tank.rotation.y)
+    rpc_unreliable("set_position", Vector2(tank.translation.x, tank.translation.z), tank.rotation.y)
