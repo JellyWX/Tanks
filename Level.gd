@@ -22,12 +22,17 @@ onready var obstacle_gridmap: Node = get_node("Obstacles")
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+    get_tree().connect("network_peer_connected", self, "_player_connected")
     # attempt to start a server publicly to allow users to join asap
     menu.public = self.start_networking(true)
     
     self.map = Map.new()
     add_child(menu)
     menu.update_network_status()
+
+
+func _player_connected(id):
+    print(id)
 
 
 func start_networking(hosting: bool, ip: String = "") -> bool:
@@ -44,12 +49,16 @@ func start_networking(hosting: bool, ip: String = "") -> bool:
 
 func send_map_change(map_path):
     self.local_map_change = true
+    var peers: PoolIntArray = get_tree().get_network_connected_peers()
+    
     self.set_map(map_path)
     rpc("set_map", map_path)
     
-    var players: int = get_tree().get_network_connected_peers().size() + 1
-    rpc("place_tanks", players)
-    self.place_tanks(players)
+    self.place_tanks(0)
+    var e: int = 1
+    for player in peers:
+        rpc_id(player, "place_tanks", e)
+        e += 1
 
 
 remote func set_map(map_path):
@@ -81,5 +90,20 @@ remote func set_map(map_path):
         print_debug("Map change not permitted. I smell a cheater")
         
     
-remote func place_tanks(total_players: int):
-    self.map.place_tanks(self, total_players)
+remote func place_tanks(order: int):
+    self.map.place_tanks(self, order)
+
+
+remote func set_position(id: int, v: Vector2, r: float):
+    if id == get_tree().get_rpc_sender_id():
+        var tank: Spatial
+        for t in self.map.tanks:
+            if t.controller_id == id:
+                tank = t
+        
+        tank.translation.x = v.x
+        tank.translation.z = v.y
+        tank.set_rotation(Vector3(0, r, 0))
+
+func update_position(tank: Node):
+    rpc_unreliable("set_position", get_tree().get_network_unique_id(), Vector2(tank.translation.x, tank.translation.z), tank.rotation.y)

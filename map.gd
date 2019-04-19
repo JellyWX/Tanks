@@ -5,6 +5,8 @@ const TILE_NAMES: Array = ["wall", "bumpy1", "track"]
 
 const TILE_WIDTH: int = 8
 
+var tanks: Array = []
+
 class Dimensions:
     var x: int
     var y: int
@@ -58,8 +60,6 @@ func _init():
     pass
 
 func load_from_file(filepath: String, ground_meshlib: MeshLibrary, obstacle_meshlib: MeshLibrary):
-    var spawn_count: int = 0
-    
     var level_map: File = File.new()
     var error = level_map.open(filepath, File.READ)
     
@@ -67,38 +67,43 @@ func load_from_file(filepath: String, ground_meshlib: MeshLibrary, obstacle_mesh
         return ReadMap.ERR_FILE
     
     else:
-        var dimensions: Dimensions = Dimensions.new(level_map.get_8(), level_map.get_8())
-        var grid: Array = []
-        
-        var next_byte_tile: int = level_map.get_8()
-        var next_byte_object: int = level_map.get_8()
-        var index: int = 0
-        
-        while not level_map.eof_reached():
-            var position: Vector2 = Vector2(index % dimensions.x, index / dimensions.x)
-            var ge = GridElement.new(next_byte_tile, next_byte_object, ground_meshlib, obstacle_meshlib, position)
-            
-            if ge.spawn:
-                spawn_count += 1
-            
-            grid.append(ge)
-            next_byte_tile = level_map.get_8()
-            next_byte_object = level_map.get_8()
-        
-            index += 1
-        
+        var x = self.load_from_bytes(level_map, ground_meshlib, obstacle_meshlib)
         level_map.close()
+        return x
         
-        if len(grid) != dimensions.size():
-            return ReadMap.ERR_WRONG_SIZE
+func load_from_bytes(bytes, ground_meshlib: MeshLibrary, obstacle_meshlib: MeshLibrary):
+    var spawn_count: int = 0
+    
+    var dimensions: Dimensions = Dimensions.new(bytes.get_8(), bytes.get_8())
+    var grid: Array = []
+    
+    var next_byte_tile: int = bytes.get_8()
+    var next_byte_object: int = bytes.get_8()
+    var index: int = 0
+    
+    while not bytes.eof_reached():
+        var position: Vector2 = Vector2(index % dimensions.x, index / dimensions.x)
+        var ge = GridElement.new(next_byte_tile, next_byte_object, ground_meshlib, obstacle_meshlib, position)
         
-        elif spawn_count != 4:
-            return ReadMap.ERR_WRONG_SPAWNS
+        if ge.spawn:
+            spawn_count += 1
         
-        else:
-            self.dimensions = dimensions
-            self.grid = grid
-            return ReadMap.OK
+        grid.append(ge)
+        next_byte_tile = bytes.get_8()
+        next_byte_object = bytes.get_8()
+    
+        index += 1
+    
+    if len(grid) != dimensions.size():
+        return ReadMap.ERR_WRONG_SIZE
+    
+    elif spawn_count != 4:
+        return ReadMap.ERR_WRONG_SPAWNS
+    
+    else:
+        self.dimensions = dimensions
+        self.grid = grid
+        return ReadMap.OK
 
 
 func draw_to_gridmap(gridmap_a: Node, gridmap_b: Node):
@@ -136,21 +141,31 @@ func reset(gridmap_a: Node, gridmap_b: Node):
         gridmap_b.set_cell_item(col, 0, row, -1)
 
 
-func place_tanks(root: Node, total_players: int):
-    var spawn_id: int = root.get_tree().get_network_unique_id() - 1
+func place_tanks(root: Node, order: int):
+    var players: PoolIntArray = root.get_tree().get_network_connected_peers()
+    
+    print(players)
+    
     var spawn_number: int = 0
+    var p_number: int = 0
+    self.tanks = []
     
     for element in self.grid:
         if element.spawn:
             var tank: Node = preload("res://Tank.tscn").instance()
             
-            if spawn_number == spawn_id:
+            if spawn_number == order:
                 tank.locally_controlled = true
-            
+            else:
+                tank.controller_id = players[p_number]
+                p_number += 1
+                
+            spawn_number += 1
+
             tank.translation = Vector3((element.position.x + 0.5) * TILE_WIDTH, 20, (element.position.y + 0.5) * TILE_WIDTH)
             
+            self.tanks.append(tank)
             root.add_child(tank)
-            spawn_number += 1
             
-            if spawn_number == total_players:
+            if spawn_number == players.size() + 1:
                 break
