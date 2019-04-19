@@ -13,31 +13,30 @@ func _ready():
 
 func _process(tdelta: float):
     if not is_on_floor():
-        movement.y = -1
+        self.movement.y = -1
     else:
-        movement.y = 0
+        self.movement.y = 0
         
-    if locally_controlled:
+    if self.locally_controlled:
         if Input.is_action_pressed("LOCAL_FORWARD"):
-            movement.x = 1
+            self.movement.x = 1
         elif Input.is_action_pressed("LOCAL_BACKWARD"):
-            movement.x = -0.6
+            self.movement.x = -0.6
         else:
-            movement.x = 0
+            self.movement.x = 0
     
-        var _collision = move_and_slide(tdelta * SPEED * movement.rotated(self.rotation.normalized(), self.rotation.length()), Vector3(0, 1, 0))
+        var _collision = move_and_slide(tdelta * SPEED * self.movement.rotated(self.rotation.normalized(), self.rotation.length()), Vector3(0, 1, 0))
     
         if Input.is_action_pressed("LOCAL_LEFT"):
             rotate_tank(tdelta, 1)
         elif Input.is_action_pressed("LOCAL_RIGHT"):
             rotate_tank(tdelta, -1)
+            
+        self.parent.update_position(self)
     
     else:
-        var _collision = move_and_slide(tdelta * SPEED * movement)
-
-func _physics_process(_delta: float):
-    if self.locally_controlled:
-        self.parent.update_position(self)
+        var _collision = move_and_slide(tdelta * SPEED * movement, Vector3(0, 1, 0))
+        
 
 func rotate_tank(delta: float, direction: float):
     rotate_object_local(Vector3(0, 1, 0), delta * direction * PI * 0.5)
