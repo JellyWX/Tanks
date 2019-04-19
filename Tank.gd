@@ -4,7 +4,6 @@ var movement: Vector3 = Vector3(0, 0, 0)
 var locally_controlled: bool = false
 var controller_id: int
 var moved: bool = false
-var ingame: bool = false
 
 var net_sync: Thread = Thread.new()
 
@@ -21,7 +20,7 @@ func _ready():
 
 func sync_position(_none):
     while true:
-        if self.ingame and self.moved:
+        if self.parent.ingame and self.moved:
             self.parent.update_position(self)
             self.moved = false
         OS.delay_msec(30)
