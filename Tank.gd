@@ -12,6 +12,8 @@ func _ready():
     self.rotation = Vector3(0, 0.0001, 0)
 
 func _process(tdelta: float):
+    var moved: bool = false
+    
     if not is_on_floor():
         self.movement.y = -1
     else:
@@ -20,8 +22,10 @@ func _process(tdelta: float):
     if self.locally_controlled:
         if Input.is_action_pressed("LOCAL_FORWARD"):
             self.movement.x = 1
+            moved = true
         elif Input.is_action_pressed("LOCAL_BACKWARD"):
             self.movement.x = -0.6
+            moved = true
         else:
             self.movement.x = 0
     
@@ -29,10 +33,13 @@ func _process(tdelta: float):
     
         if Input.is_action_pressed("LOCAL_LEFT"):
             rotate_tank(tdelta, 1)
+            moved = true
         elif Input.is_action_pressed("LOCAL_RIGHT"):
             rotate_tank(tdelta, -1)
+            moved = true
             
-        self.parent.update_position(self)
+        if moved:
+            self.parent.update_position(self)
     
     else:
         var _collision = move_and_slide(tdelta * SPEED * movement, Vector3(0, 1, 0))
