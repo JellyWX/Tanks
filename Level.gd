@@ -46,6 +46,10 @@ func send_map_change(map_path):
     self.local_map_change = true
     self.set_map(map_path)
     rpc("set_map", map_path)
+    
+    var players: int = get_tree().get_network_connected_peers().size() + 1
+    rpc("place_tanks", players)
+    self.place_tanks(players)
 
 
 remote func set_map(map_path):
