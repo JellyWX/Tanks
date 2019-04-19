@@ -8,7 +8,7 @@ var ingame: bool = false
 
 var net_sync: Thread = Thread.new()
 
-const SPEED: int = 450
+const SPEED: int = 550
 
 onready var parent = get_parent()
 
@@ -24,24 +24,25 @@ func sync_position(_none):
         if self.ingame and self.moved:
             self.parent.update_position(self)
             self.moved = false
-        OS.delay_msec(60)
+        OS.delay_msec(30)
 
 
-func _process(tdelta: float):
+func _physics_process(tdelta: float):
     if not is_on_floor():
         self.movement.y = -1
     else:
         self.movement.y = 0
         
     if self.locally_controlled:
-        if Input.is_action_pressed("LOCAL_FORWARD"):
-            self.movement.x = 1
-            moved = true
-        elif Input.is_action_pressed("LOCAL_BACKWARD"):
-            self.movement.x = -0.6
-            moved = true
-        else:
-            self.movement.x = 0
+        if is_on_floor():
+            if Input.is_action_pressed("LOCAL_FORWARD"):
+                self.movement.x = 1
+                moved = true
+            elif Input.is_action_pressed("LOCAL_BACKWARD"):
+                self.movement.x = -0.6
+                moved = true
+            else:
+                self.movement.x = 0
     
         var _collision = move_and_slide(tdelta * SPEED * self.movement.rotated(self.rotation.normalized(), self.rotation.length()), Vector3(0, 1, 0))
     
