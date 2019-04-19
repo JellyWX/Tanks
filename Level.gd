@@ -96,10 +96,7 @@ remote func place_tanks(order: int):
 
 remote func set_position(id: int, v: Vector2, r: float):
     if id == get_tree().get_rpc_sender_id():
-        var tank: Spatial
-        for t in self.map.tanks:
-            if t.controller_id == id:
-                tank = t
+        var tank: Spatial = self.map.tanks[id]
         
         tank.translation.x = v.x
         tank.translation.z = v.y

@@ -5,7 +5,7 @@ const TILE_NAMES: Array = ["wall", "bumpy1", "track"]
 
 const TILE_WIDTH: int = 8
 
-var tanks: Array = []
+var tanks: Dictionary = {}
 
 class Dimensions:
     var x: int
@@ -148,7 +148,7 @@ func place_tanks(root: Node, order: int):
     
     var spawn_number: int = 0
     var p_number: int = 0
-    self.tanks = []
+    self.tanks.clear()
     
     for element in self.grid:
         if element.spawn:
@@ -156,6 +156,7 @@ func place_tanks(root: Node, order: int):
             
             if spawn_number == order:
                 tank.locally_controlled = true
+                tank.controller_id = root.get_tree().get_network_unique_id()
             else:
                 tank.controller_id = players[p_number]
                 p_number += 1
@@ -164,7 +165,7 @@ func place_tanks(root: Node, order: int):
 
             tank.translation = Vector3((element.position.x + 0.5) * TILE_WIDTH, 20, (element.position.y + 0.5) * TILE_WIDTH)
             
-            self.tanks.append(tank)
+            self.tanks[tank.controller_id] = tank
             root.add_child(tank)
             
             if spawn_number == players.size() + 1:
