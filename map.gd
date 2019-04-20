@@ -152,7 +152,7 @@ func place_tanks(root: Node, order: int, priv_id: int):
     
     for element in self.grid:
         if element.spawn:
-            var tank: Node = preload("res://Tank.tscn").instance()
+            var tank: Node = preload("res://entities/Tank.tscn").instance()
             
             if spawn_number == order:
                 tank.locally_controlled = true

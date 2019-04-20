@@ -6,9 +6,9 @@ func _ready():
     var _err = get_node("JoinGame").connect("pressed", self, "join_game")
     
     var maps: Array = list_directory("res://maps/")
-    
+
     var container: Node = get_node("Container")
-    
+
     for map in maps:
         var button: Node = preload("res://interfaces/LoadLevel.tscn").instance()
         button.text = map
