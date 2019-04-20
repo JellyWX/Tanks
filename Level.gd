@@ -65,7 +65,7 @@ func send_map_change(map_path):
         rpc_id(player, "place_tanks", e, pid)
         e += 1
         
-        self.map.tanks[e].update_code = pid
+        self.map.tanks[player].update_code = pid
 
 
 remote func set_map(map_path):
@@ -98,26 +98,33 @@ remote func place_tanks(order: int, priv_id: int):
     self.map.place_tanks(self, order, priv_id)
 
 
-remote func set_position(v: Vector2, r: float, s: int, validation: int):
-    if get_tree().get_rpc_sender_id() == 1:
-        var tank: Spatial = self.map.tanks[s]
-        
+remote func set_position(v: Vector2, r: float, net_sender: int, validation: int):
+    var tank: Spatial = self.map.tanks[net_sender]
+    
+    # if the host sends the update and the update is not regarding ourselves
+    if get_tree().get_rpc_sender_id() == 1 \
+        and net_sender != get_tree().get_network_unique_id():
         tank.translation.x = v.x
         tank.translation.z = v.y
         tank.set_rotation(Vector3(0, r, 0))
+    
+    # else if we are the host
+        # does the validation they sent match the validation we gave them when we started the game
+    elif get_tree().get_network_unique_id() == 1 \
+        and tank.update_code == validation:
+          
+        # yes- redistribute their position update
+        rpc_unreliable("set_position", v, r, net_sender, 0)
         
-    elif get_tree().get_network_unique_id() == 1:
-        var tank: Spatial = self.map.tanks[s]
-        if tank.update_code == validation:
-            rpc_unreliable("set_position", v, r, s, null)
-            
-            tank.translation.x = v.x
-            tank.translation.z = v.y
-            tank.set_rotation(Vector3(0, r, 0))
+        # update their position locally
+        tank.translation.x = v.x
+        tank.translation.z = v.y
+        tank.set_rotation(Vector3(0, r, 0))
 
 
 func update_position(tank: Node):
-    if get_tree().get_network_unique_id() != 1:
-        rpc_unreliable_id(1, "set_position", Vector2(tank.translation.x, tank.translation.z), tank.rotation.y, get_tree().get_network_unique_id(), tank.update_code)
+    var nid: int = get_tree().get_network_unique_id()
+    if nid != 1:
+        rpc_unreliable_id(1, "set_position", Vector2(tank.translation.x, tank.translation.z), tank.rotation.y, nid, tank.update_code)
     else:
-        rpc_unreliable("set_position", Vector2(tank.translation.x, tank.translation.z), tank.rotation.y, 1, null)
+        rpc_unreliable("set_position", Vector2(tank.translation.x, tank.translation.z), tank.rotation.y, 1, 0)
