@@ -2,6 +2,7 @@ extends KinematicBody
 
 var movement: Vector3 = Vector3(0, 0, 0)
 var locally_controlled: bool = false
+var update_code: int
 var controller_id: int
 var moved: bool = false
 
@@ -16,7 +17,6 @@ func _ready():
     
     self.rotation = Vector3(0, 0.0001, 0)
     
-    self.ingame = true
 
 func sync_position(_none):
     while true:

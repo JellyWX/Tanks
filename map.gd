@@ -141,7 +141,7 @@ func reset(gridmap_a: Node, gridmap_b: Node):
         gridmap_b.set_cell_item(col, 0, row, -1)
 
 
-func place_tanks(root: Node, order: int):
+func place_tanks(root: Node, order: int, priv_id: int):
     var players: PoolIntArray = root.get_tree().get_network_connected_peers()
     
     print(players)
@@ -157,6 +157,7 @@ func place_tanks(root: Node, order: int):
             if spawn_number == order:
                 tank.locally_controlled = true
                 tank.controller_id = root.get_tree().get_network_unique_id()
+                tank.update_code = priv_id
             else:
                 tank.controller_id = players[p_number]
                 p_number += 1

@@ -48,17 +48,24 @@ func start_networking(hosting: bool, ip: String = "") -> bool:
         
 
 func send_map_change(map_path):
+    randomize()
+    
     self.local_map_change = true
     var peers: PoolIntArray = get_tree().get_network_connected_peers()
     
     self.set_map(map_path)
     rpc("set_map", map_path)
     
-    self.place_tanks(0)
+    self.place_tanks(0, 1)
     var e: int = 1
+    var pids: Array = []
+    
     for player in peers:
-        rpc_id(player, "place_tanks", e)
+        var pid: int = rand_range(0, 0xffffffff)
+        rpc_id(player, "place_tanks", e, pid)
         e += 1
+        
+        self.map.tanks[e].update_code = pid
 
 
 remote func set_map(map_path):
@@ -85,22 +92,32 @@ remote func set_map(map_path):
         
         self.ingame = true
         self.local_map_change = false
-    
-    else:
-        print_debug("Map change not permitted. I smell a cheater")
         
     
-remote func place_tanks(order: int):
-    self.map.place_tanks(self, order)
+remote func place_tanks(order: int, priv_id: int):
+    self.map.place_tanks(self, order, priv_id)
 
 
-remote func set_position(v: Vector2, r: float):
-    var tank: Spatial = self.map.tanks[get_tree().get_rpc_sender_id()]
-    
-    tank.translation.x = v.x
-    tank.translation.z = v.y
-    tank.set_rotation(Vector3(0, r, 0))
+remote func set_position(v: Vector2, r: float, s: int, validation: int):
+    if get_tree().get_rpc_sender_id() == 1:
+        var tank: Spatial = self.map.tanks[s]
+        
+        tank.translation.x = v.x
+        tank.translation.z = v.y
+        tank.set_rotation(Vector3(0, r, 0))
+        
+    elif get_tree().get_network_unique_id() == 1:
+        var tank: Spatial = self.map.tanks[s]
+        if tank.update_code == validation:
+            rpc_unreliable("set_position", v, r, s, null)
+            
+            tank.translation.x = v.x
+            tank.translation.z = v.y
+            tank.set_rotation(Vector3(0, r, 0))
 
 
 func update_position(tank: Node):
-    rpc_unreliable("set_position", Vector2(tank.translation.x, tank.translation.z), tank.rotation.y)
+    if get_tree().get_network_unique_id() != 1:
+        rpc_unreliable_id(1, "set_position", Vector2(tank.translation.x, tank.translation.z), tank.rotation.y, get_tree().get_network_unique_id(), tank.update_code)
+    else:
+        rpc_unreliable("set_position", Vector2(tank.translation.x, tank.translation.z), tank.rotation.y, 1, null)
