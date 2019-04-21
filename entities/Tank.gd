@@ -55,7 +55,7 @@ func _physics_process(tdelta: float):
                 self.movement.x = 0
     
             if rotated:
-                self.movement.x *= 0.6
+                self.movement.x *= 0.64
     
         var _collision = move_and_slide(tdelta * SPEED * self.movement.rotated(self.rotation.normalized(), self.rotation.length()), Vector3(0, 1, 0))
     

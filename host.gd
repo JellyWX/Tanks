@@ -47,4 +47,3 @@ func start_client(ip: String) -> bool:
     
 func start_match():
     pass
-    
