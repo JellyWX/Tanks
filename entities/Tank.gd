@@ -11,6 +11,7 @@ var net_sync: Thread = Thread.new()
 const SPEED: int = 700
 
 onready var parent = get_parent()
+onready var particles = get_node("Turret/Particles")
 
 func _ready():
     self.net_sync.start(self, "sync_position", null, 2)
@@ -41,6 +42,13 @@ func _physics_process(tdelta: float):
         
         get_node("Turret").rotation.y = -cursor_pos.angle_to_point(tank_screen_pos)
         
+        if Input.is_action_just_pressed("PRIMARY"):
+            print("Firing")
+            self.particles.emitting = true
+            self.particles.restart()
+        else:
+            self.particles.emitting = false
+
         if is_on_floor():
             var rotated: bool = false
             
