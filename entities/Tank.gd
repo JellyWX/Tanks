@@ -15,7 +15,7 @@ onready var parent = get_parent()
 func _ready():
     self.net_sync.start(self, "sync_position", null, 2)
     
-    self.rotation = Vector3(0, 0.0001, 0)
+    get_node("Body").rotation = Vector3(0, 0.0001, 0)
     
 
 func sync_position(_none):
@@ -33,6 +33,14 @@ func _physics_process(tdelta: float):
         self.movement.y = 0
         
     if self.locally_controlled:
+        var camera: Camera = get_tree().get_root().get_camera()
+        
+        var tank_screen_pos: Vector2 = camera.unproject_position(self.translation)
+        
+        var cursor_pos: Vector2 = get_viewport().get_mouse_position()
+        
+        get_node("Turret").rotation.y = -cursor_pos.angle_to_point(tank_screen_pos)
+        
         if is_on_floor():
             var rotated: bool = false
             
@@ -57,11 +65,12 @@ func _physics_process(tdelta: float):
             if rotated:
                 self.movement.x *= 0.64
     
-        var _collision = move_and_slide(tdelta * SPEED * self.movement.rotated(self.rotation.normalized(), self.rotation.length()), Vector3(0, 1, 0))
+        var _collision = move_and_slide(tdelta * SPEED * self.movement.rotated(get_node("Body").rotation.normalized(), get_node("Body").rotation.length()), Vector3(0, 1, 0))
     
     else:
         var _collision = move_and_slide(tdelta * SPEED * movement, Vector3(0, 1, 0))
         
 
 func rotate_tank(delta: float, direction: float):
-    rotate_object_local(Vector3(0, 1, 0), delta * direction * PI * 0.65)
+    get_node("Body").rotate_object_local(Vector3(0, 1, 0), delta * direction * PI * 0.65)
+    get_node("CollisionShape").rotate_object_local(Vector3(0, 1, 0), delta * direction * PI * 0.65)

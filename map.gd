@@ -125,6 +125,7 @@ func draw_to_gridmap(gridmap_a: Node, gridmap_b: Node):
 
 
 func position_camera(camera: Node):
+    # TODO dynamic camera height
     camera.translate_object_local(Vector3(self.dimensions.x * TILE_WIDTH * 0.5, 75, (self.dimensions.y + 7) * TILE_WIDTH * 0.5))
     camera.rotate_object_local(Vector3(1, 0, 0), -PI * 0.42)
 

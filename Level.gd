@@ -58,10 +58,9 @@ func send_map_change(map_path):
     
     self.place_tanks(0, 1)
     var e: int = 1
-    var pids: Array = []
     
     for player in peers:
-        var pid: int = rand_range(0, 0xffffffff)
+        var pid: int = rand_range(1, 0xffffffff)
         rpc_id(player, "place_tanks", e, pid)
         e += 1
         
