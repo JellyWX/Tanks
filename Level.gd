@@ -97,7 +97,7 @@ remote func place_tanks(order: int, priv_id: int):
     self.map.place_tanks(self, order, priv_id)
 
 
-remote func set_position(v: Vector2, r: float, net_sender: int, validation: int):
+remote func set_position(v: Vector2, r: float, r2: float, net_sender: int):
     var tank: Spatial = self.map.tanks[net_sender]
     
     # if the host sends the update and the update is not regarding ourselves
@@ -105,25 +105,60 @@ remote func set_position(v: Vector2, r: float, net_sender: int, validation: int)
         and net_sender != get_tree().get_network_unique_id():
         tank.translation.x = v.x
         tank.translation.z = v.y
-        tank.set_rotation(Vector3(0, r, 0))
-    
-    # else if we are the host
+        tank.body.set_rotation(Vector3(0, r, 0))
+        tank.turret.set_rotation(Vector3(0, r2, 0))
+
+remote func sync_position(v: Vector2, r: float, r2: float, net_sender: int, validation: int):
+    var tank: Spatial = self.map.tanks[net_sender]
+    # if we are the host
         # does the validation they sent match the validation we gave them when we started the game
-    elif get_tree().get_network_unique_id() == 1 \
+    if get_tree().get_network_unique_id() == 1 \
         and tank.update_code == validation:
           
         # yes- redistribute their position update
-        rpc_unreliable("set_position", v, r, net_sender, 0)
+        rpc_unreliable("set_position", v, r, r2, net_sender, 0)
         
         # update their position locally
         tank.translation.x = v.x
         tank.translation.z = v.y
-        tank.set_rotation(Vector3(0, r, 0))
+        tank.body.set_rotation(Vector3(0, r, 0))
+        tank.turret.set_rotation(Vector3(0, r2, 0))
 
 
 func update_position(tank: Node):
     var nid: int = get_tree().get_network_unique_id()
     if nid != 1:
-        rpc_unreliable_id(1, "set_position", Vector2(tank.translation.x, tank.translation.z), tank.rotation.y, nid, tank.update_code)
+        rpc_unreliable_id(1, "sync_position", Vector2(tank.translation.x, tank.translation.z), tank.body.rotation.y, tank.turret.rotation.y, nid, tank.update_code)
     else:
-        rpc_unreliable("set_position", Vector2(tank.translation.x, tank.translation.z), tank.rotation.y, 1, 0)
+        rpc_unreliable("set_position", Vector2(tank.translation.x, tank.translation.z), tank.body.rotation.y, tank.turret.rotation.y, 1)
+
+
+remote func set_firing(firing_angle: float, net_sender: int):
+    var tank: Spatial = self.map.tanks[net_sender]
+    
+    # if the host sends the update and the update is not regarding ourselves
+    if get_tree().get_rpc_sender_id() == 1 \
+        and net_sender != get_tree().get_network_unique_id():
+        
+        tank.turret.set_rotation(Vector3(0, firing_angle, 0))
+        tank.fire()
+
+
+remote func sync_firing(r: float, net_sender: int, validation: int):
+    var tank: Spatial = self.map.tanks[net_sender]
+    
+    if get_tree().get_network_unique_id() == 1 \
+        and tank.update_code == validation:
+        
+        rpc("set_firing", r, net_sender)
+        
+        tank.turret.set_rotation(Vector3(0, r, 0))
+        tank.fire()
+
+
+func update_firing(tank: Node):
+    var nid: int = get_tree().get_network_unique_id()
+    if nid != 1:
+        rpc_id(1, "sync_firing", tank.turret.rotation.y, nid, tank.update_code)
+    else:
+        rpc("set_firing", tank.turret.rotation.y, 1)
