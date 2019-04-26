@@ -25,7 +25,7 @@ func _ready():
     self.net_sync.start(self, "sync_position", null, 2)
     
     # set a rotation because otherwise things don't work
-    get_node("Body").rotation = Vector3(0, 0.0001, 0)
+    self.body.rotation = Vector3(0, 0.0001, 0)
     
 
 func sync_position(_none):
@@ -82,7 +82,7 @@ func send_fire_request():
 func fire():
     var bullet: Node = preload("res://entities/Shell.tscn").instance()
     bullet.rotation = self.turret.rotation
-    bullet.translation = self.translation + Vector3(8, 2, 0).rotated(self.turret.rotation.normalized(), self.turret.rotation.length())
+    bullet.translation = self.translation + Vector3(0, 2.5, 0)
     
     self.get_parent().add_child(bullet)
 
