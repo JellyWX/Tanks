@@ -51,7 +51,7 @@ func _physics_process(tdelta: float):
         if self.is_on_floor():
             self.check_movement_input(tdelta)
     
-        var _collision = move_and_slide(tdelta * SPEED * self.movement.rotated(get_node("Body").rotation.normalized(), get_node("Body").rotation.length()), Vector3(0, 1, 0))
+        var _collision = move_and_slide(tdelta * SPEED * self.movement.rotated(self.body.rotation.normalized(), self.body.rotation.length()), Vector3(0, 1, 0))
     
     else:
         var _collision = move_and_slide(tdelta * SPEED * movement, Vector3(0, 1, 0))
@@ -80,7 +80,11 @@ func send_fire_request():
 
 
 func fire():
-    pass
+    var bullet: Node = preload("res://entities/Shell.tscn").instance()
+    bullet.rotation = self.turret.rotation
+    bullet.translation = self.translation + Vector3(8, 2, 0).rotated(self.turret.rotation.normalized(), self.turret.rotation.length())
+    
+    self.get_parent().add_child(bullet)
 
 
 func check_movement_input(tdelta: float):
