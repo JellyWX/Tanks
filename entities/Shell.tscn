@@ -2,7 +2,7 @@
 
 [ext_resource path="res://entities/Shell.gd" type="Script" id=1]
 
-[sub_resource type="SphereShape" id=1]
+[sub_resource type="BoxShape" id=1]
 
 [node name="Shell" type="KinematicBody"]
 collision_layer = 0
@@ -10,9 +10,10 @@ collision_mask = 2
 script = ExtResource( 1 )
 
 [node name="CSGSphere" type="CSGSphere" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.961256, 0 )
 radius = 0.5
 
 [node name="CollisionShape" type="CollisionShape" parent="."]
-transform = Transform( 0.5, 0, 0, 0, 2, 0, 0, 0, 0.5, 0, 0, 0 )
+transform = Transform( 0.5, 0, 0, 0, 2, 0, 0, 0, 0.5, 0, 0.97093, 0 )
 shape = SubResource( 1 )
 
